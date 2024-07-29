@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Relatório de Estados</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <h1>Relatório de Estados</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Sigla</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="estado : ${listaEstados}">
+                <td th:text="${estado.id}"></td>
+                <td th:text="${estado.nome}"></td>
+                <td th:text="${estado.sigla}"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

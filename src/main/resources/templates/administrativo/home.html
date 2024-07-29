@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="style.css">
+    <title>VendasWeb</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+    <nav>
+        <a class="menu-item" href="#" data-target="home">Página Inicial</a>
+        <div class="dropdown">
+            <a class="menu-item" href="#" data-target="vendas">Vendas</a>
+            <div class="dropdown-content">
+                <a href="/cadastroVenda">Efetuar venda</a>
+                <a href="/cadastroAgendamento">Agendar pedidos</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <a class="menu-item" href="#" data-target="cadastros">Cadastros</a>
+            <div class="dropdown-content">
+                <a href="/cadastroCliente">Clientes</a>
+                <a href="/cadastroProduto">Produtos</a>
+                <a href="/cadastroEstado">Estado</a>
+                <a href="/cadastroCidade">Cidade</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <a class="menu-item" href="#" data-target="relatorios">Relatórios</a>
+            <div class="dropdown-content">
+                <a href="/listarVenda">Relatório de vendas</a>
+                <a href="/listarCliente">Lista de clientes</a>
+                <a href="/listarEstado">Lista de estados</a>
+                <a href="/listarProduto">Lista de produtos</a>
+                <a href="/listarAgendamentos">Lista de agendamentos</a>
+            </div>
+        </div>
+        <a class="menu-item" href="/cadastroEmpresa" data-target="configuracoes">Empresa</a>
+        <span class="n"></span>
+
+        <div id="conteudoNavbar">
+            <form>
+                <a href="/logout" type="submit">Logout</a>
+            </form>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            <section id="periodo-select">
+                <label for="periodo">Selecione o período:</label>
+                <select id="periodo">
+                    <option value="dia">Dia</option>
+                    <option value="semana">Semana</option>
+                    <option value="mes">Mês</option>
+                    <option value="ano">Ano</option>
+                </select>
+            </section>
+
+            <section id="grafico-vendas-section">
+                <h2>Gráfico de Vendas</h2>
+                <div class="chart-container">
+                    <canvas id="grafico-vendas"></canvas>
+                </div>
+            </section>
+
+            <section id="top-itens-vendidos-section">
+                <h2>Itens Vendidos</h2>
+                <div class="top-itens-container">
+                    <div class="chart-container">
+                        <canvas id="grafico-top-itens"></canvas>
+                    </div>
+                </div>
+        </div>
+        </section>
+        </div>
+    </main>
+
+    <script>
+        
+        const periodoSelect = document.getElementById('periodo');
+        const graficoVendas = document.getElementById('grafico-vendas');
+        const topItensVendidos = document.getElementById('top-itens-vendidos');
+        const graficoTopItens = document.getElementById('grafico-top-itens');
+
+        
+        async function buscarVendasPorPeriodo(periodo) {
+            try {
+                const response = await fetch(`/vendas/por-periodo?periodo=${periodo}`);
+                const vendas = await response.json();
+                return vendas;
+            } catch (error) {
+                console.error('Erro ao buscar vendas:', error);
+                return [];
+            }
+        }
+
+       
+        function criarGraficoVendas(vendas) {
+            if (graficoVendas.chart) {
+                graficoVendas.chart.destroy();
+            }
+
+            if (vendas.length === 0) {
+                console.log('Nenhuma venda encontrada para o período selecionado.');
+                return;
+            }
+
+            
+            const vendasLimitadas = vendas.slice(0, 100);
+
+            const ctx = graficoVendas.getContext('2d');
+            const labels = vendasLimitadas.map(venda => venda.dataVenda);
+            const data = vendasLimitadas.map(venda => venda.valorTotal);
+
+            graficoVendas.chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Vendas',
+                        data: data,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        
+        async function criarTopItensVendidos(periodo) {
+            try {
+                const response = await fetch(`/itens-vendidos/por-periodo?periodo=${periodo}`);
+                const itens = await response.json();
+
+                const nomesProdutos = itens.map(item => item.produto.nome);
+                const quantidades = itens.map(item => item.quantidade);
+
+                criarGraficoTopItens(nomesProdutos, quantidades);
+
+            } catch (error) {
+                console.error('Erro ao buscar itens vendidos:', error);
+            }
+        }
+
+        
+        function criarGraficoTopItens(nomesProdutos, quantidades) {
+            const ctx = graficoTopItens.getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: nomesProdutos,
+                    datasets: [{
+                        label: 'Quantidade Vendida',
+                        data: quantidades,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        
+        async function init() {
+            const periodo = periodoSelect.value;
+            const vendas = await buscarVendasPorPeriodo(periodo);
+            criarGraficoVendas(vendas);
+            criarTopItensVendidos(periodo);
+        }
+
+        
+        periodoSelect.addEventListener('change', init);
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+
+</body>
+
+</html>

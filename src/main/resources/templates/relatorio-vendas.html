@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Vendas por Produto e Data</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <canvas id="myChart"></canvas>
+    <script>
+        function fetchData() {
+            return fetch('/dadosVendas')
+                .then(response => response.json())
+                .then(data => data);
+        }
+
+        async function createChart() {
+            const data = await fetchData();
+
+            const labels = [];
+            const datasets = {};
+
+            data.forEach(item => {
+                const date = item.data;
+                const product = item.produto;
+                const value = item.valorTotal;
+
+                if (!labels.includes(date)) {
+                    labels.push(date);
+                }
+
+                if (!datasets[product]) {
+                    datasets[product] = Array(labels.length).fill(0);
+                }
+
+                const index = labels.indexOf(date);
+                datasets[product][index] = value;
+            });
+
+            const ctx = document.getElementById('myChart').getContext('2d');
+            const myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: Object.keys(datasets).map(product => ({
+                        label: product,
+                        data: datasets[product],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }))
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        window.onload = createChart;
+    </script>
+</body>
+</html>

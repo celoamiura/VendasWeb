@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="https://thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <title>Imprimir Venda</title>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header text-center">
+                <h2>Detalhes da Venda</h2>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Cliente: <span th:text="${venda.cliente.nome}">Nome do Cliente</span></h5>
+                <h5 class="card-title">Total: <span th:text="${venda.valorTotal}">Valor Total</span></h5>
+                <h5 class="card-title">Itens:</h5>
+                <ul class="list-group">
+                    <li class="list-group-item" th:each="item : ${itensVenda}">
+                        Produto: <span th:text="${item.produto.nome}">Nome do Produto</span>,
+                        Quantidade: <span th:text="${item.quantidade}">Quantidade</span>,
+                        Subtotal: <span th:text="${item.subtotal}">Subtotal</span>
+                    </li>
+                </ul>
+                <div th:if="${agendamento}">
+                    <h5 class="card-title mt-4">Detalhes do Agendamento:</h5>
+                    <p>Data de Agendamento: <span th:text="${agendamento.dataAgendamento}">Data de Agendamento</span>
+                    </p>
+                    <p>Observação: <span th:text="${agendamento.observacao}">Observação</span></p>
+                    <p>Venda: <span th:text="${agendamento.venda.cliente.nome}">Cliente da Venda</span></p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
